@@ -15,7 +15,7 @@ module tt_um_example (
     input  wire       clk,      // clock
     input  wire       rst_n     // reset_n - low to reset
 );
-wire _unused = &{ena, uio_in[7:2], 1'b0};
+wire _unused = &{ena, uio_in[7:3], uio_in[2], 1'b0};
 wire load = uio_in[0];
 wire run = uio_in[1];
 
@@ -44,7 +44,7 @@ always @(posedge clk or negedge rst_n) begin
   end
 end
 
-assign uo_out = count;
-assign uio_out = {7'b0, (count ==8'd0)};
-assign uio_oe = 8'b00000001; // only uio[0] is output
+  assign uo_out = count;
+  assign uio_out = {5'b0, (count == 8'd0), 2'b0}; // done on uio[2]
+  assign uio_oe = 8'b00000100; // only uio[2] is output, uio[0,1] are inputs
 endmodule 

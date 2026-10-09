@@ -26,4 +26,4 @@ async def test_timer(dut):
     # wait: 5 counts * DIV(10) = 50 cycles + margin
     await ClockCycles(dut.clk, 60)
     assert int(dut.uo_out.value) == 0
-    assert (int(dut.uio_out.value) & 1) == 1  # done
+    assert ((int(dut.uio_out.value) >> 2) & 1) == 1  # done on uio[2]
