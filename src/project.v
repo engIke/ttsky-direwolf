@@ -15,13 +15,36 @@ module tt_um_example (
     input  wire       clk,      // clock
     input  wire       rst_n     // reset_n - low to reset
 );
+wire _unused = &{ena, uio_in[7:2], 1'b0};
+wire load = uio_in[0];
+wire run = uio_in[1];
 
-  // All output pins must be assigned. If not used, assign to 0.
-  assign uo_out  = ui_in + uio_in;  // Example: ou_out is the sum of ui_in and uio_in
-  assign uio_out = 0;
-  assign uio_oe  = 0;
+reg [7:0] count;
+reg [15:0] prescale;
+//DIV=10 for sim so you can see it count fast.
+// For real HW change to e.g 50000 for 1kHz from 50MHz
+parameter DIV = 10;
 
-  // List all unused inputs to prevent warnings
-  wire _unused = &{ena, clk, rst_n, 1'b0};
+wire tick = (prescale == DIV-1);
 
-endmodule
+always @(posedge clk or negedge rst_n) begin
+  if (!rst_n) begin
+    count <=0;
+    prescale <=0;
+  end else begin 
+    if (load) begin
+      count <= ui_in;
+      prescale <=0;
+    end else if (run && (count !=0)) begin
+      if (tick) begin
+        count <= count -1;
+        prescale <=0;
+      end else prescale <= prescale + 1;
+    end
+  end
+end
+
+assign uo_out = count;
+assign uio_out = {7'b0, (count ==8'd0)};
+assign uio_oe = 8'b00000001; // only uio[0] is output
+endmodule 
